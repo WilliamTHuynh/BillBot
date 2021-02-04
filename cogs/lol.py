@@ -1,4 +1,5 @@
 import random
+import requests
 
 from discord.ext import commands
 
@@ -7,7 +8,32 @@ class LoL(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    #commands
+    # commands
+    @commands.command()
+    async def mmr(self, ctx, *, summoner_name: str):
+        """
+                       A method gets the average MMR of a North American League of Legends player by
+                       using WhatisMyMMR.com's API.
+                       Parameters:
+                            ctx (commands.Context): The invocation context.
+                            * : greedy converter by Discord Python
+                            summoner_name: the summoner that is requested
+                       Output:
+                            The average MMR of a NA LoL player. Checks if the summoner exists and has an MMR.
+                       Returns:
+                           None.
+        """
+        response = requests.get(f"https://na.whatismymmr.com/api/v1/summoner?name={summoner_name.replace(' ', '+')}")
+        data = response.json()
+        if data.get('error', None):
+            await ctx.send(f'This summoner does not exists.')
+        else:
+            mmr = data['ranked']['avg']
+            if mmr:
+                await ctx.send(f'{summoner_name} has an average ranked MMR of **{mmr}**.')
+            else:
+                await ctx.send(f'{summoner_name} is currently not ranked.')
+
     @commands.command()
     async def pantheon(self, ctx):
         """
@@ -18,7 +44,7 @@ class LoL(commands.Cog):
                      A random quote from Pantheon.
                 Returns:
                     None.
-                """
+        """
         quotes = [
             '"In battle, we are reborn"',
             '"Flee, and the spear will find your back."',
